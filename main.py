@@ -40,7 +40,7 @@ lb = labelbox.Client(api_key=LB_API_KEY)
 #PUT ANNOTATIONS INTO SNOWFLAKE
 bronze_df = labelsnow.get_annotations(lb, "cktrls5t7379d0y9i9pv8cicu")
 print(bronze_df)
-flattened_table = labelsnow.bronze_flattener((bronze_df))
+flattened_table = labelsnow.flatten_bronze_table((bronze_df))
 flattened_table.to_csv("checkit.csv")
 for col in flattened_table.columns:
     print(col)

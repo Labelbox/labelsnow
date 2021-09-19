@@ -37,6 +37,29 @@ LABELBOX_DEFAULT_TYPE_DICTIONARY = {
     'Skipped': 'bool'
 }
 
+def flatten_bronze_table(df):
+
+    df = df.reset_index()
+
+    s = (df.applymap(type) == dict).all()
+    dict_columns = s[s].index.tolist()
+
+    while len(dict_columns) > 0:
+        new_columns = []
+
+        for col in dict_columns:
+            # explode dictionaries horizontally, adding new columns
+            horiz_exploded = pd.json_normalize(df[col]).add_prefix(f'{col}_')
+            horiz_exploded.index = df.index
+            df = pd.concat([df, horiz_exploded], axis=1).drop(columns=[col])
+            new_columns.extend(horiz_exploded.columns) # inplace
+
+        # check if there are still dict fields to flatten
+        s = (df[new_columns].applymap(type) == dict).all()
+        dict_columns = s[s].index.tolist()
+
+    return df
+
 import json
 def get_annotations(labelbox_client, project_id):
     """Request annotations for a specific project_id and produce a Snowflake-ready Pandas Dataframe"""
@@ -52,10 +75,6 @@ def get_annotations(labelbox_client, project_id):
     df["Updated At"] = pd.to_datetime(df["Updated At"])
 
     return df
-
-import flattener
-def bronze_flattener(annotations_dataframe):
-    return flattener.flatten_nested_json_df(annotations_dataframe)
 
 def bronze_to_silver(annotations_dataframe):
     """This method refines your annotations_dataframe into a more queryable state.
