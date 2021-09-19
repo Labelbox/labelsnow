@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#Special files
+credentials.py #since Snowflake SDK often requires your username and password
