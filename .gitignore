@@ -3,8 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#mac stuff
+.DS_Store
+
 # C extensions
 *.so
+
+#Pycharm stuff
+.idea/*
 
 # Distribution / packaging
 .Python
@@ -129,4 +135,4 @@ dmypy.json
 .pyre/
 
 #Special files
-credentials.py #since Snowflake SDK often requires your username and password
+credentials.py
