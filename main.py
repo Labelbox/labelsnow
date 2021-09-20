@@ -41,9 +41,12 @@ lb = labelbox.Client(api_key=LB_API_KEY)
 bronze_df = labelsnow.get_annotations(lb, "cktrls5t7379d0y9i9pv8cicu")
 print(bronze_df)
 flattened_table = labelsnow.flatten_bronze_table((bronze_df))
-flattened_table.to_csv("checkit.csv")
-for col in flattened_table.columns:
-    print(col)
+silver_table =labelsnow.silver_table(bronze_df)
+print(silver_table)
+print(labelsnow.table_definition_sql("silver_table"))
+#flattened_table.to_csv("checkit.csv")
+# for col in flattened_table.columns:
+#     print(col)
 
 from snowflake.connector.pandas_tools import write_pandas
 
@@ -64,7 +67,7 @@ try:
     # cs.execute("USE DATABASE SAMPLE_NL")
     # cs.execute("USE SCHEMA PUBLIC")
     #cs.execute("CREATE OR REPLACE TABLE HELLOWORLD")
-    #success, nchunks, nrows, _ = write_pandas(ctx, bronze_df, 'NLDEMO2')
+    success, nchunks, nrows, _ = write_pandas(ctx, silver_table, 'SILVER_TABLE')
 finally:
     print("foo")
     #cs.close()
