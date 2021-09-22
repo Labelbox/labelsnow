@@ -58,7 +58,7 @@ def flatten_bronze_table(df):
         s = (df[new_columns].applymap(type) == dict).all()
         dict_columns = s[s].index.tolist()
 
-    return df
+    return df.set_index("index")
 
 def silver_table(df):
     flattened_bronze = flatten_bronze_table(df)
@@ -108,10 +108,8 @@ def silver_table(df):
                 "frameNumber"] = row["Label_frameNumber"]# need to store the unique framenumber identifier for video
         new_json.append(my_dictionary)
 
-    parsed_classifications = pd.DataFrame(new_json).set_index("DataRow ID")
-    print(parsed_classifications)
+    parsed_classifications = pd.DataFrame(new_json)
 
-    flattened_bronze = flattened_bronze.set_index("DataRow ID")
     if video:
         print("To-Do")
         # need to inner-join with frameNumber to avoid creating N-squared datarows, since each frame has same DataRowID
@@ -123,8 +121,7 @@ def silver_table(df):
         # joined_df = parsed_classifications.join(flattened_bronze, ["DataRow ID"],
         #                                         "inner")
 
-    print(joined_df)
-    return joined_df.set_index("index")
+    return joined_df
 
 
 import json
@@ -149,7 +146,8 @@ def bronze_to_silver(annotations_dataframe):
     print("foo")
 
 #SQL command to produce table for Labelbox annotations --write to a sql file and run in Snowflake
-def table_definition_sql(table_name):
+def table_definitions_sql(table_name):
+
     print("""create or replace table {} (ID string,
  "DataRow ID" string,
  "Labeled Data" string, 
