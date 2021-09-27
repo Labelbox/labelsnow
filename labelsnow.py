@@ -1,5 +1,6 @@
 import pandas as pd
 import urllib
+import logging
 
 def create_dataset(labelbox_client, snowflake_pandas_dataframe, dataset_name):
     """Takes in a dataframe with the following column names: external_id, row_data
@@ -15,9 +16,17 @@ def create_dataset(labelbox_client, snowflake_pandas_dataframe, dataset_name):
     } for index, row in snowflake_pandas_dataframe.iterrows()]
     upload_task = dataSet_new.create_data_rows(data_row_urls)
     upload_task.wait_till_done()
-    print("{}: Dataset creation. Dataset ID: {}".format(upload_task.status, dataSet_new.uid))
+    logging.info("{}: Dataset creation. Dataset ID: {}".format(upload_task.status, dataSet_new.uid))
 
     return dataSet_new
+
+def get_snowflake_datarows(snowflake_cursor, stage_name, signed_url_expiration = 604800):
+    sql_string = ("select relative_path as external_id, "
+                             "get_presigned_url(@{s_name}, relative_path, 604800) as row_data "
+                             "from directory(@{s_name})".format(s_name = stage_name))
+    snowflake_cursor.execute(sql_string)
+    logging.info("Executing query on Snowflake: " + sql_string)
+    return snowflake_cursor.fetch_pandas_all()
 
 LABELBOX_DEFAULT_TYPE_DICTIONARY = {
     'ID': 'string',
@@ -58,6 +67,7 @@ def flatten_bronze_table(df):
         s = (df[new_columns].applymap(type) == dict).all()
         dict_columns = s[s].index.tolist()
 
+    logging.info("flatten_bronze_table: Returning flattened table.")
     return df.set_index("index")
 
 def silver_table(df):
@@ -121,6 +131,7 @@ def silver_table(df):
         # joined_df = parsed_classifications.join(flattened_bronze, ["DataRow ID"],
         #                                         "inner")
 
+    logging.info("silver_table: Returning final table.")
     return joined_df
 
 
@@ -138,34 +149,30 @@ def get_annotations(labelbox_client, project_id):
     df["Created At"] = pd.to_datetime(df["Created At"])
     df["Updated At"] = pd.to_datetime(df["Updated At"])
 
+    logging.info("Returning annotations DataFrame from Labelbox")
     return df
 
-def bronze_to_silver(annotations_dataframe):
-    """This method refines your annotations_dataframe into a more queryable state.
-    annotations_dataframe is the output from get_annotations(labelbox_client, project_id)."""
-    print("foo")
-
-#SQL command to produce table for Labelbox annotations --write to a sql file and run in Snowflake
-def table_definitions_sql(table_name):
-
-    print("""create or replace table {} (ID string,
- "DataRow ID" string,
- "Labeled Data" string, 
- "Label" string, 
- "Created By" string, 
- "Project Name" string,
- "Seconds to Label" float,
-"External ID" string, 
-"Agreement" integer,
-"Benchmark ID" string,
-"Benchmark Agreement" integer,
-"Dataset Name" string,
-"Reviews" string,
-"View Label" string, 
-"Has Open Issues" integer,
-"Skipped" boolean,
-"Created At" datetime,
-"Updated At" datetime);""".format(table_name))
+# #SQL command to produce table for Labelbox annotations --write to a sql file and run in Snowflake
+# def table_definitions_sql(table_name):
+#
+#     print("""create or replace table {} (ID string,
+#  "DataRow ID" string,
+#  "Labeled Data" string,
+#  "Label" string,
+#  "Created By" string,
+#  "Project Name" string,
+#  "Seconds to Label" float,
+# "External ID" string,
+# "Agreement" integer,
+# "Benchmark ID" string,
+# "Benchmark Agreement" integer,
+# "Dataset Name" string,
+# "Reviews" string,
+# "View Label" string,
+# "Has Open Issues" integer,
+# "Skipped" boolean,
+# "Created At" datetime,
+# "Updated At" datetime);""".format(table_name))
 
 #helper methods
 
