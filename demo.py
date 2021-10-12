@@ -42,7 +42,7 @@ ctx.close()
 my_demo_dataset = labelsnow.create_dataset(labelbox_client=lb, snowflake_pandas_dataframe=df, dataset_name="SF Test")
 
 #Get annotations dataframe from Labelbox for a demo project (returns Pandas dataframes)
-bronze_df = labelsnow.get_annotations(lb, "cktrls5t7379d0y9i9pv8cicu")
+bronze_df = labelsnow.get_annotations(lb, "ckolzeshr7zsy0736w0usbxdj") #sample completed project
 flattened_table = labelsnow.flatten_bronze_table((bronze_df))
 silver_table =labelsnow.silver_table(bronze_df)
 
