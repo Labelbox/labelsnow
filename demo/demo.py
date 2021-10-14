@@ -7,12 +7,19 @@ import logging
 
 #Authenticate into Labelbox and Snowflake
 import credentials
-# Enter your Labelbox API key here or store them in a separate file ignored by git
-LB_API_KEY = credentials.LB_API_KEY
-lb = labelbox.Client(api_key=LB_API_KEY)
-#dataset = lb.create_dataset(name="SF Test")
 
-#Enter your Snowflake credentials here or store them in a separate file ignored by git
+#create a credentials.py file with these variables for this demo to run:
+"""
+user = "your_snowflake_username_here"
+password = "your_snowflake_password_here"
+account = "your_snowflake_account_URL_prefix_here" 
+LB_API_KEY = "your_labelbox_API_key_here" 
+"""
+
+LB_API_KEY = credentials.LB_API_KEY
+lb_client = labelbox.Client(api_key=LB_API_KEY)
+
+#Enter your Snowflake credentials here or store them in a separate credentials file ignored by git
 ctx = snowflake.connector.connect(
     user=credentials.user,
     password=credentials.password,
@@ -20,35 +27,34 @@ ctx = snowflake.connector.connect(
     )
 cs = ctx.cursor()
 
-logging.getLogger().setLevel(logging.INFO) #uncomment to suppress logs from printing
+logging.getLogger().setLevel(logging.INFO) #comment to hide logs from your display
 
 #Upload Sample Unstructured Data Files
+#Important: This code refers to a folder in your local directory /tmp/SFImages/
 try:
     cs.execute("USE DATABASE SAMPLE_NL")
     cs.execute("create or replace stage my_stage directory = (enable = true) encryption = (type = 'SNOWFLAKE_SSE')")
     logging.info("Begin uploading files to Snowflake stage.")
-    cs.execute("put file:////tmp/SFImages/*.jpeg @my_stage AUTO_COMPRESS=False") #add all images in my local directory
+    cs.execute("put file:////Users/nicklee/SFImages/*.jpeg @my_stage AUTO_COMPRESS=False") #add all images to a top-level folder SFImages
     cs.execute("alter stage my_stage refresh")
     cs.execute("select * from directory(@my_stage)")
     df = labelsnow.get_snowflake_datarows(cs, "my_stage", 604800)
-    # cs.execute("select relative_path as external_id, get_presigned_url(@my_stage, relative_path, 604800) as row_data from directory(@my_stage)")
-    # df = cs.fetch_pandas_all()
 finally:
     cs.close()
 ctx.close()
 
 #Create dataset in Labelbox
-
-my_demo_dataset = labelsnow.create_dataset(labelbox_client=lb, snowflake_pandas_dataframe=df, dataset_name="SF Test")
+my_demo_dataset = labelsnow.create_dataset(labelbox_client=lb_client, snowflake_pandas_dataframe=df, dataset_name="SF Test")
 
 #Get annotations dataframe from Labelbox for a demo project (returns Pandas dataframes)
-bronze_df = labelsnow.get_annotations(lb, "ckolzeshr7zsy0736w0usbxdj") #sample completed project
+#insert your own project ID from Labelbox in the get_annotations() method
+bronze_df = labelsnow.get_annotations(lb_client, "ckolzeshr7zsy0736w0usbxdj") #sample completed project
 flattened_table = labelsnow.flatten_bronze_table((bronze_df))
 silver_table =labelsnow.silver_table(bronze_df)
 
 from snowflake.connector.pandas_tools import write_pandas
 import warnings
-warnings.simplefilter(action='ignore', category=UserWarning) #I do this to suppress Pandas' outdated warnings
+warnings.simplefilter(action='ignore', category=UserWarning) #This suppresses some outdated warnings from Pandas
 def put_tables_in_snowflake(snowflake_connector, your_tables):
     """Takes in your SF Connector, and a dictionary of tables (key = table name) to deposit into Snowflake."""
     cs = snowflake_connector.cursor()
@@ -63,8 +69,6 @@ def put_tables_in_snowflake(snowflake_connector, your_tables):
         finally:
             cs.execute("SELECT * FROM " + table_name)
             logging.info("Finished writing tables to Snowflake, confirmed Select * works on table.")
-            # cs.execute("SELECT * FROM " + table_name)
-            # df2 = cs.fetch_pandas_all()
     cs.close()
     snowflake_connector.close()
 
@@ -82,8 +86,3 @@ ctx = snowflake.connector.connect(
     )
 
 put_tables_in_snowflake(ctx, my_table_payload)
-
-def cleanup():
-    print("Cleanup method here")
-    #delete dataset
-    #delete project
