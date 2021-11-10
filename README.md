@@ -107,7 +107,7 @@ Then deposit these Pandas dataframes into Snowflake with `put_tables_into_snowfl
 
 While using LabelSnow, you will likely also use the Labelbox SDK (e.g. for programmatic ontology creation). These resources will help familiarize you with the Labelbox Python SDK: 
 * [Visit our docs](https://labelbox.com/docs/python-api) to learn how the SDK works
-* Checkout our [LabelSnow demo code](https://github.com/Labelbox/labelsnow/tree/main/demo) for inspiration.
+* View our [LabelSnow demo code](https://github.com/Labelbox/labelsnow/tree/main/demo) for inspiration.
 * view our [API reference](https://labelbox.com/docs/python-api/api-reference).
 
 ## Authentication
