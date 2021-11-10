@@ -2,6 +2,8 @@ import requests
 import json
 import pandas as pd
 from .constants import LABELBOX_DEFAULT_TYPE_DICTIONARY
+
+
 def get_videoframe_annotations(bronze_video_labels, api_key):
     # This method takes in the bronze table from get_annotations and produces
     # an array of bronze dataframes containing frame labels for each project
@@ -12,7 +14,9 @@ def get_videoframe_annotations(bronze_video_labels, api_key):
     headers = {'Authorization': f"Bearer {api_key}"}
     master_array_of_json_arrays = []
     for index, row in bronze_video_labels.iterrows():
-        response = requests.get(row.Label["frames"], headers=headers, stream=False)
+        response = requests.get(row.Label["frames"],
+                                headers=headers,
+                                stream=False)
         data = []
         for line in response.iter_lines():
             data.append({
@@ -24,10 +28,11 @@ def get_videoframe_annotations(bronze_video_labels, api_key):
 
     array_of_bronze_dataframes = []
     for frameset in master_array_of_json_arrays:
-        data = json.loads(frameset) #parse the JSON into a dict
+        data = json.loads(frameset)  #parse the JSON into a dict
         # df = pd.json_normalize(data) #had to use this b/c the data is a list of json objects
         # df = df.astype(LABELBOX_DEFAULT_TYPE_DICTIONARY)
-        df = pd.DataFrame.from_dict(data).astype({'DataRow ID': 'string'}) #create pandas DF with proper col type
-        array_of_bronze_dataframes.append(df) #create array of bronze tables
+        df = pd.DataFrame.from_dict(data).astype(
+            {'DataRow ID': 'string'})  #create pandas DF with proper col type
+        array_of_bronze_dataframes.append(df)  #create array of bronze tables
 
     return array_of_bronze_dataframes
