@@ -112,8 +112,7 @@ While using LabelSnow, you will likely also use the Labelbox SDK (e.g. for progr
 
 ## Authentication
 
-Labelbox uses API keys to validate requests. You can create and manage API keys on [Labelbox](https://app.labelbox.com/account/api-keys). We recommend using the Databricks Secrets API to store your key. If you don't have the Secrets API, you can store your API key in a separate notebook ignored by version control. 
-
+Labelbox uses API keys to validate requests. You can create and manage API keys on [Labelbox](https://app.labelbox.com/account/api-keys). 
 
 ## Contribution
 Please consult `CONTRIB.md`
