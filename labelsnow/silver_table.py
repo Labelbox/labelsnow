@@ -10,9 +10,10 @@ def silver_table(df):
     # search for columns to explode/flatten
     s = (flattened_bronze.applymap(type) == list).all()
     list_columns = s[s].index.tolist() #generally yields ['Label_objects', 'Label_classifications', 'Label_relationships']
+    print(list_columns)
 
     video = False #this will be used for future video frame handling
-    if "Label_frameNumber" in list_columns:
+    if "Label_frameNumber" in flattened_bronze.columns:
         video = True
 
     new_json = []
@@ -49,17 +50,16 @@ def silver_table(df):
         my_dictionary["DataRow ID"] = row["DataRow ID"] # close it out
         if video:
             my_dictionary[
-                "frameNumber"] = row["Label_frameNumber"]# need to store the unique framenumber identifier for video
+                "Label_frameNumber"] = row["Label_frameNumber"]# need to store the unique framenumber identifier for video
         new_json.append(my_dictionary)
 
     parsed_classifications = pd.DataFrame(new_json)
+    print(parsed_classifications.info(verbose=True))
 
     if video:
-        print("To-Do")
         # need to inner-join with frameNumber to avoid creating N-squared datarows, since each frame has same DataRowID
-        # joined_df = parsed_classifications.join(flattened_bronze,
-        #                                         ["DataRow ID", "Label_frameNumber"],
-        #                                         "inner")
+        joined_df = pd.merge(parsed_classifications, flattened_bronze, how = 'inner',
+                             on=["DataRow ID", "Label_frameNumber"])
     else:
         joined_df = pd.merge(parsed_classifications, flattened_bronze, how = 'inner', on="DataRow ID")
         # joined_df = parsed_classifications.join(flattened_bronze, ["DataRow ID"],

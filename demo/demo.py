@@ -44,13 +44,13 @@ finally:
 ctx.close()
 
 #Create dataset in Labelbox
-my_demo_dataset = labelsnow.create_dataset(labelbox_client=lb_client, snowflake_pandas_dataframe=df, dataset_name="SF Test")
+#my_demo_dataset = labelsnow.create_dataset(labelbox_client=lb_client, snowflake_pandas_dataframe=df, dataset_name="SF Test")
 
 #Get annotations dataframe from Labelbox for a demo project (returns Pandas dataframes)
 #insert your own project ID from Labelbox in the get_annotations() method
-bronze_df = labelsnow.get_annotations(lb_client, "ckolzeshr7zsy0736w0usbxdj") #sample completed project
-flattened_table = labelsnow.flatten_bronze_table((bronze_df))
-silver_table =labelsnow.silver_table(bronze_df)
+# bronze_df = labelsnow.get_annotations(lb_client, "ckut1646f0ry30zaoh49abz5p") #sample completed project
+# flattened_table = labelsnow.flatten_bronze_table((bronze_df))
+# silver_table =labelsnow.silver_table(bronze_df)
 
 from snowflake.connector.pandas_tools import write_pandas
 import warnings
@@ -72,9 +72,33 @@ def put_tables_in_snowflake(snowflake_connector, your_tables):
     cs.close()
     snowflake_connector.close()
 
-my_table_payload = {"BRONZE_TABLE": bronze_df,
-                    "FLATTENED_BRONZE_TABLE": flattened_table,
-                    "SILVER_TABLE": silver_table}
+# my_table_payload = {"BRONZE_TABLE": bronze_df,
+#                     "FLATTENED_BRONZE_TABLE": flattened_table,
+#                     "SILVER_TABLE": silver_table}
+#
+# ctx = snowflake.connector.connect(
+#         user=credentials.user,
+#         password=credentials.password,
+#         account=credentials.account,
+#         warehouse="COMPUTE_WH",
+#         database="SAMPLE_NL",
+#         schema="PUBLIC"
+#     )
+#
+# put_tables_in_snowflake(ctx, my_table_payload)
+
+#videos demo for a project with multiple videos
+video_bronze = labelsnow.get_annotations(lb_client, "ckurowgdr161e0zeh07x6hb6d") #sample completed video project
+video_dataframe_framesets = labelsnow.get_videoframe_annotations(video_bronze, LB_API_KEY)
+silver_video_dataframes = {}
+
+video_count = 1
+for frameset in video_dataframe_framesets:
+    silver_table = labelsnow.silver_table(frameset)
+    silver_table_with_datarowid = pd.merge(silver_table, video_bronze, how = 'inner', on=["DataRow ID"])
+    video_name = "VIDEO_DEMO_{}".format(video_count)
+    silver_video_dataframes[video_name] = silver_table_with_datarowid
+    video_count += 1
 
 ctx = snowflake.connector.connect(
         user=credentials.user,
@@ -85,4 +109,5 @@ ctx = snowflake.connector.connect(
         schema="PUBLIC"
     )
 
-put_tables_in_snowflake(ctx, my_table_payload)
+put_tables_in_snowflake(ctx, silver_video_dataframes)
+

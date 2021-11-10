@@ -6,3 +6,4 @@ from .get_annotations import get_annotations
 from .get_snowflake_datarows import get_snowflake_datarows
 from .is_json import is_json
 from .silver_table import silver_table
+from .get_videoframe_annotations import get_videoframe_annotations
