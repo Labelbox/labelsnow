@@ -28,7 +28,7 @@ def silver_table(df):
                     if classification_json["answer"] is not None:  # if answer is null, that means it exists in secondary "answers" column
                         answer = classification_json["answer"]["title"]
                     else:
-                        answer = classification_json["answers"] # TO-DO: FIX HANDLING OF CHECKLIST AND DROPDOWN
+                        answer = classification_json["answers"] #This is for checklists or dropdowns
                 else:
                     print("This line may be unnecessary")#answer = row["Label.classifications.answer.title"][index]
                 my_dictionary = add_json_answers_to_dictionary(

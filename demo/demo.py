@@ -48,44 +48,44 @@ ctx.close()
 
 #Get annotations dataframe from Labelbox for a demo project (returns Pandas dataframes)
 #insert your own project ID from Labelbox in the get_annotations() method
-# bronze_df = labelsnow.get_annotations(lb_client, "ckut1646f0ry30zaoh49abz5p") #sample completed project
-# flattened_table = labelsnow.flatten_bronze_table((bronze_df))
-# silver_table =labelsnow.silver_table(bronze_df)
+bronze_df = labelsnow.get_annotations(lb_client, "ckut1646f0ry30zaoh49abz5p") #sample completed project
+flattened_table = labelsnow.flatten_bronze_table(bronze_df)
+silver_table =labelsnow.silver_table(bronze_df)
 
-from snowflake.connector.pandas_tools import write_pandas
+#from snowflake.connector.pandas_tools import write_pandas
 import warnings
 warnings.simplefilter(action='ignore', category=UserWarning) #This suppresses some outdated warnings from Pandas
-def put_tables_in_snowflake(snowflake_connector, your_tables):
-    """Takes in your SF Connector, and a dictionary of tables (key = table name) to deposit into Snowflake."""
-    cs = snowflake_connector.cursor()
-
-    for table_name in your_tables.keys():
-        try:
-            sql_command = pd.io.sql.get_schema(your_tables[table_name], table_name)
-            insertion_index = sql_command.find("TABLE")
-            sql_command = sql_command[:insertion_index] + "OR REPLACE " + sql_command[insertion_index:]
-            cs.execute(sql_command)
-            success, nchunks, nrows, _ = write_pandas(ctx, your_tables[table_name], table_name)
-        finally:
-            cs.execute("SELECT * FROM " + table_name)
-            logging.info("Finished writing tables to Snowflake, confirmed Select * works on table.")
-    cs.close()
-    snowflake_connector.close()
-
-# my_table_payload = {"BRONZE_TABLE": bronze_df,
-#                     "FLATTENED_BRONZE_TABLE": flattened_table,
-#                     "SILVER_TABLE": silver_table}
+# def put_tables_in_snowflake(snowflake_connector, your_tables):
+#     """Takes in your SF Connector, and a dictionary of tables (key = table name) to deposit into Snowflake."""
+#     cs = snowflake_connector.cursor()
 #
-# ctx = snowflake.connector.connect(
-#         user=credentials.user,
-#         password=credentials.password,
-#         account=credentials.account,
-#         warehouse="COMPUTE_WH",
-#         database="SAMPLE_NL",
-#         schema="PUBLIC"
-#     )
-#
-# put_tables_in_snowflake(ctx, my_table_payload)
+#     for table_name in your_tables.keys():
+#         try:
+#             sql_command = pd.io.sql.get_schema(your_tables[table_name], table_name)
+#             insertion_index = sql_command.find("TABLE")
+#             sql_command = sql_command[:insertion_index] + "OR REPLACE " + sql_command[insertion_index:]
+#             cs.execute(sql_command)
+#             success, nchunks, nrows, _ = write_pandas(ctx, your_tables[table_name], table_name)
+#         finally:
+#             cs.execute("SELECT * FROM " + table_name)
+#             logging.info("Finished writing tables to Snowflake, confirmed Select * works on table.")
+#     cs.close()
+#     snowflake_connector.close()
+
+my_table_payload = {"BRONZE_TABLE": bronze_df,
+                    "FLATTENED_BRONZE_TABLE": flattened_table,
+                    "SILVER_TABLE": silver_table}
+
+ctx = snowflake.connector.connect(
+        user=credentials.user,
+        password=credentials.password,
+        account=credentials.account,
+        warehouse="COMPUTE_WH",
+        database="SAMPLE_NL",
+        schema="PUBLIC"
+    )
+
+labelsnow.put_tables_into_snowflake(ctx, my_table_payload)
 
 #videos demo for a project with multiple videos
 video_bronze = labelsnow.get_annotations(lb_client, "ckurowgdr161e0zeh07x6hb6d") #sample completed video project
@@ -109,5 +109,5 @@ ctx = snowflake.connector.connect(
         schema="PUBLIC"
     )
 
-put_tables_in_snowflake(ctx, silver_video_dataframes)
+labelsnow.put_tables_into_snowflake(ctx, silver_video_dataframes)
 
