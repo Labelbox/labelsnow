@@ -12,7 +12,6 @@ def silver_table(df):
     s = (flattened_bronze.applymap(type) == list).all()
     list_columns = s[s].index.tolist(
     )  #generally yields ['Label_objects', 'Label_classifications', 'Label_relationships']
-    print(list_columns)
 
     video = False  #this will be used for future video frame handling
     if "Label_frameNumber" in flattened_bronze.columns:
@@ -61,7 +60,6 @@ def silver_table(df):
         new_json.append(my_dictionary)
 
     parsed_classifications = pd.DataFrame(new_json)
-    print(parsed_classifications.info(verbose=True))
 
     if video:
         # need to inner-join with frameNumber to avoid creating N-squared datarows, since each frame has same DataRowID
