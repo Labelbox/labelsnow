@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="labelsnow",
-    version="0.0.3",
+    version="0.1.0",
     author="Labelbox",
     author_email="ecosystem+snowflake@labelbox.com",
     description="Labelbox Connector for Snowflake",
