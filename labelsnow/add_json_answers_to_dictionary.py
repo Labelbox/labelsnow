@@ -2,6 +2,7 @@ import ast
 import json
 from labelsnow.is_json import is_json
 
+
 def add_json_answers_to_dictionary(title, answer, my_dictionary):
     try:  # see if I can read the answer string as a literal --it might be an array of JSONs
         convert_from_literal_string = ast.literal_eval(answer)

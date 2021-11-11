@@ -1,6 +1,7 @@
 import pandas as pd
 import logging
 
+
 def flatten_bronze_table(df):
 
     df = df.reset_index()
@@ -16,7 +17,7 @@ def flatten_bronze_table(df):
             horiz_exploded = pd.json_normalize(df[col]).add_prefix(f'{col}_')
             horiz_exploded.index = df.index
             df = pd.concat([df, horiz_exploded], axis=1).drop(columns=[col])
-            new_columns.extend(horiz_exploded.columns) # inplace
+            new_columns.extend(horiz_exploded.columns)  # inplace
 
         # check if there are still dict fields to flatten
         s = (df[new_columns].applymap(type) == dict).all()
