@@ -4,7 +4,6 @@ import logging
 from labelsnow.flatten_bronze_table import flatten_bronze_table
 from labelsnow.add_json_answers_to_dictionary import add_json_answers_to_dictionary
 
-
 def silver_table(df):
     flattened_bronze = flatten_bronze_table(df)
 
@@ -29,10 +28,13 @@ def silver_table(df):
                 if "answer" in classification_json:
                     if classification_json[
                             "answer"] is not None:  # if answer is null, that means it exists in secondary "answers" column
-                        answer = classification_json["answer"]["title"]
+                        if "title" in classification_json["answer"]:
+                            answer = classification_json["answer"]["title"]
+                        else: #this is an edge case where the answer isn't nested in another layer; e.g. for our textfields
+                            answer = classification_json["answer"]
                     else:
                         answer = classification_json[
-                            "answers"]  #This is for checklists or dropdowns
+                            "answers"] #This is for checklists or dropdowns
                 else:
                     print(
                         "This line may be unnecessary"
@@ -40,7 +42,7 @@ def silver_table(df):
                 my_dictionary = add_json_answers_to_dictionary(
                     title, answer, my_dictionary)
         except Exception as e:
-            print("No classifications found.")
+            print(e)
 
         # object counting
         try:  # this field won't work if the Label does not have objects in it
@@ -52,6 +54,32 @@ def silver_table(df):
                     my_dictionary[object_name] += 1  # add 1 to counter
         except Exception as e:
             print("No objects found.")
+
+        #object classifications (if applicable). This is messy code which duplicates some above behavior, can be improved.
+        try:  # this won't work if there are no classifications
+            for object in row.get("Label_objects", []):
+                if "classifications" in object:
+                    for index, classification_json in enumerate(
+                            object["classifications"]):
+                        title = classification_json["title"]
+                        if "answer" in classification_json:
+                            if classification_json[
+                                "answer"] is not None:  # if answer is null, that means it exists in secondary "answers" column
+                                if "title" in classification_json["answer"]:
+                                    answer = classification_json["answer"]["title"]
+                                else:  # this is an edge case where the answer isn't nested in another layer; e.g. for our textfields
+                                    answer = classification_json["answer"]
+                            else:
+                                answer = classification_json[
+                                    "answers"]  # This is for checklists or dropdowns
+                        else:
+                            print(
+                                "This line may be unnecessary"
+                            )  # answer = row["Label.classifications.answer.title"][index]
+                        my_dictionary = add_json_answers_to_dictionary(
+                            title, answer, my_dictionary)
+        except Exception as e:
+            print(e)
 
         my_dictionary["DataRow ID"] = row["DataRow ID"]  # close it out
         if video:
@@ -75,5 +103,4 @@ def silver_table(df):
         # joined_df = parsed_classifications.join(flattened_bronze, ["DataRow ID"],
         #                                         "inner")
 
-    logging.info("silver_table: Returning final table.")
     return joined_df
