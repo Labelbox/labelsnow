@@ -1,28 +1,41 @@
-import requests
 import json
 import pandas as pd
-from .constants import LABELBOX_DEFAULT_TYPE_DICTIONARY
 
+def get_videoframe_annotations(bronze_video_labels, project_id):
+    """
+    Retrieves frame-level annotations for a specific project from the bronze video labels.
 
-def get_videoframe_annotations(bronze_video_labels, api_key):
+    Args:
+        bronze_video_labels (pandas.DataFrame): The bronze video labels dataframe.
+        project_id (str): The ID of the project to retrieve annotations for.
+
+    Returns:
+        list: A list of bronze dataframes containing frame labels for the specified project.
+    """
     # This method takes in the bronze table from get_annotations and produces
     # an array of bronze dataframes containing frame labels for each project
     # bronze_video_labels = bronze_video_labels.withColumnRenamed(
     #     "DataRow ID", "DataRowID")
-
-    # We manually build a string of frame responses to leverage our existing jsonToDataFrame code, which takes in JSON
-    headers = {'Authorization': f"Bearer {api_key}"}
+    
     master_array_of_json_arrays = []
-    for index, row in bronze_video_labels.iterrows():
-        response = requests.get(row.Label["frames"],
-                                headers=headers,
-                                stream=False)
+    for _, row in bronze_video_labels.iterrows():
         data = []
-        for line in response.iter_lines():
-            data.append({
-                "DataRow ID": row["DataRow ID"],
-                "Label": json.loads(line.decode('utf-8'))
-            })
+        project_labels = row["projects"][project_id]["labels"]
+        for annot in project_labels:
+            key_frame_feature_map = annot["annotations"]["key_frame_feature_map"]
+            frames = annot["annotations"]["frames"]
+            #each feature id has frame_values of the frames the feature id appears in
+            for feature_id, frame_values in key_frame_feature_map.items():
+                for frame in frame_values:
+                    frame_objects = frames[str(frame)]["objects"]
+                    # only append data if feature is a segmentation mask
+                    if feature_id in frame_objects:
+                        annotation_kind = frames[str(frame)]["objects"][feature_id]["annotation_kind"]
+                        if annotation_kind == "VideoSegmentationMask":
+                            data.append({
+                                "DataRow ID": row["data_row"]["id"],
+                                "Label": frames[str(frame)]["objects"][feature_id]
+                            })
         massive_string_of_responses = json.dumps(data)
         master_array_of_json_arrays.append(massive_string_of_responses)
 
