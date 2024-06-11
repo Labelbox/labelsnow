@@ -13,6 +13,6 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://labelbox.com",
     packages=setuptools.find_packages(),
-    install_requires=["labelbox", "pandas", "snowflake-connector-python"],
+    install_requires=["labelbox", "pandas>=2.1.0", "snowflake-connector-python"],
     keywords=["labelbox", "labelsnow"],
 )
