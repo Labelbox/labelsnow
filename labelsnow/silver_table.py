@@ -8,7 +8,7 @@ def silver_table(df):
     flattened_bronze = flatten_bronze_table(df)
 
     # search for columns to explode/flatten
-    s = (flattened_bronze.applymap(type) == list).all()
+    s = (flattened_bronze.map(type) == list).all()
     list_columns = s[s].index.tolist(
     )  #generally yields ['Label_objects', 'Label_classifications', 'Label_relationships']
 
@@ -81,7 +81,7 @@ def silver_table(df):
         except Exception as e:
             print(e)
 
-        my_dictionary["DataRow ID"] = row["DataRow ID"]  # close it out
+        my_dictionary["data_row_id"] = row["data_row_id"]  # close it out
         if video:
             my_dictionary["Label_frameNumber"] = row[
                 "Label_frameNumber"]  # need to store the unique framenumber identifier for video
@@ -94,12 +94,12 @@ def silver_table(df):
         joined_df = pd.merge(parsed_classifications,
                              flattened_bronze,
                              how='inner',
-                             on=["DataRow ID", "Label_frameNumber"])
+                             on=["data_row_id", "Label_frameNumber"])
     else:
         joined_df = pd.merge(parsed_classifications,
                              flattened_bronze,
                              how='inner',
-                             on="DataRow ID")
+                             on="data_row_id")
         # joined_df = parsed_classifications.join(flattened_bronze, ["DataRow ID"],
         #                                         "inner")
 

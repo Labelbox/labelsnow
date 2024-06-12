@@ -6,7 +6,7 @@ def flatten_bronze_table(df):
 
     df = df.reset_index()
 
-    s = (df.applymap(type) == dict).all()
+    s = (df.map(type) == dict).all()
     dict_columns = s[s].index.tolist()
 
     while len(dict_columns) > 0:
@@ -20,7 +20,7 @@ def flatten_bronze_table(df):
             new_columns.extend(horiz_exploded.columns)  # inplace
 
         # check if there are still dict fields to flatten
-        s = (df[new_columns].applymap(type) == dict).all()
+        s = (df[new_columns].map(type) == dict).all()
         dict_columns = s[s].index.tolist()
 
     logging.info("flatten_bronze_table: Returning flattened table.")
