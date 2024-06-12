@@ -36,8 +36,9 @@ def get_videoframe_annotations(bronze_video_labels, project_id):
                                 "DataRow ID": row["data_row"]["id"],
                                 "Label": frames[str(frame)]["objects"][feature_id]
                             })
-        massive_string_of_responses = json.dumps(data)
-        master_array_of_json_arrays.append(massive_string_of_responses)
+        if data:
+            massive_string_of_responses = json.dumps(data)
+            master_array_of_json_arrays.append(massive_string_of_responses)
 
     array_of_bronze_dataframes = []
     for frameset in master_array_of_json_arrays:
