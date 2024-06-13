@@ -132,7 +132,7 @@ export VERSION=1.0.0
 pip download --no-deps labelsnow==${VERSION}
 
 curl --location -O \
-  https://github.com/Labelbox/labelbox-python/releases/download/${VERSION}/multiple.intoto.jsonl
+  https://github.com/Labelbox/labelsnow/releases/download/${VERSION}/multiple.intoto.jsonl
 
 slsa-verifier verify-artifact --source-branch main --builder-id 'https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@refs/tags/v2.0.0' --source-uri "git+https://github.com/Labelbox/labelsnow" --provenance-path multiple.intoto.jsonl ./labelsnow-${VERSION}-py3-none-any.whl
 ```
