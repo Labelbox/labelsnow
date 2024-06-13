@@ -125,11 +125,14 @@ This document provides detailed information about the build process, including t
 
 By using the [SLSA framework's official verifier](https://github.com/slsa-framework/slsa-verifier), you can verify the provenance document to ensure that the package is from a trusted source. Verifying the provenance helps confirm that the package has not been tampered with and was built in a secure environment.
 
-Example of usage for the 0.1.3 release wheel:
+Example of usage for the 1.0.0 release wheel:
 
 ```
-VERSION=0.1.3 #tag
-gh release download ${VERSION} --repo Labelbox/labelsnow
+export VERSION=1.0.0
+pip download --no-deps labelsnow==${VERSION}
+
+curl --location -O \
+  https://github.com/Labelbox/labelsnow/releases/download/${VERSION}/multiple.intoto.jsonl
 
 slsa-verifier verify-artifact --source-branch main --builder-id 'https://github.com/slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@refs/tags/v2.0.0' --source-uri "git+https://github.com/Labelbox/labelsnow" --provenance-path multiple.intoto.jsonl ./labelsnow-${VERSION}-py3-none-any.whl
 ```
