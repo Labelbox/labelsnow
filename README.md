@@ -129,7 +129,7 @@ Example of usage for the 1.0.0 release wheel:
 
 ```
 export VERSION=1.0.0
-pip download --no-deps labelbox==${VERSION}
+pip download --no-deps labelsnow==${VERSION}
 
 curl --location -O \
   https://github.com/Labelbox/labelbox-python/releases/download/${VERSION}/multiple.intoto.jsonl
