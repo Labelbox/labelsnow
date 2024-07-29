@@ -1,3 +1,7 @@
+> [!WARNING]
+> Starting in July 2024, we will begin achieving all data connector libraries were they will no longer be maintained, including `labelspark`, `labelpandas`, `labelsnow`, and `labelbox-bigquery` libraries.
+> To import data from remote sources such as Databricks and Snowflake, set up Census integrations directly on the Labelbox platform.
+
 # Labelbox Connector for Snowflake
 
 Access the Labelbox Connector for Snowflake to connect an unstructured dataset to Labelbox, programmatically set up an ontology for labeling, and load the labeled dataset into your Snowflake environment. 
