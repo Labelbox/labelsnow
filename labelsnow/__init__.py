@@ -8,3 +8,6 @@ from .is_json import is_json
 from .silver_table import silver_table
 from .get_videoframe_annotations import get_videoframe_annotations
 from .put_tables_into_snowflake import put_tables_into_snowflake
+from warnings import warn
+
+warn(f'The module {__name__} is deprecated.', DeprecationWarning, stacklevel=2)
